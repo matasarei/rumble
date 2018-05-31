@@ -61,7 +61,7 @@ class CreateAppRecordsTable extends Migration
     }
 }
 ```
-You change write \ read capacity later in table settings \ DynamoDB console or setup auto scaling.
+You can change write \ read capacity later in table settings \ DynamoDB console or setup auto scaling.
 
 ### Seed table
 ```php
