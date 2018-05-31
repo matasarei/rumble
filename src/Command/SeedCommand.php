@@ -25,7 +25,7 @@ class SeedCommand extends Command
     {
         $this
             ->setName('rumble:seed')
-            ->setDescription('Seeds dynamoDb tables with sample data.')
+            ->setDescription('Seeds DynamoDB tables with sample data.')
         ;
     }
 
