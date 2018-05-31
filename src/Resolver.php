@@ -2,11 +2,49 @@
 
 namespace Matasar\Bundle\Rumble;
 
+use Aws\DynamoDb\DynamoDbClient;
+
 /**
  * @author Lawrence Enehizena <lawstands@gmail.com>
+ * @author Yevhen Matasar <matasar.ei@gmail.com>
  */
 trait Resolver
 {
+    /** @var DynamoDbClient */
+    protected $dynamoDBClient;
+
+    /** @var string */
+    protected $directory;
+
+    /**
+     * @param string $directory
+     * @param string $endpoint
+     * @param string $region
+     * @param string $version
+     * @param string $key
+     * @param string $secret
+     */
+    public function __construct($directory, $endpoint, $region, $version, $key = null, $secret = null)
+    {
+        $dbClientParams = [
+            'region' => $region,
+            'version' => $version,
+            'endpoint' => $endpoint
+        ];
+
+        if (!empty($key) && !empty($secret)) {
+            $dbClientParams['credentials'] = [
+                'key' => $key,
+                'secret' => $secret
+            ];
+        }
+
+        $this->directory = $directory;
+        $this->dynamoDBClient = new DynamoDbClient($dbClientParams);
+        
+        parent::__construct();
+    }
+
     /**
      * Get class names from files in migrations/seeds directory.
      * For any class found require it, so we can create an instance.
@@ -26,15 +64,15 @@ trait Resolver
         $dirHandler  = opendir($dir);
         $classes = [];
         while (false != ($file = readdir($dirHandler))) {
-            if ($file != "." && $file != "..") {
-                require_once("$dir"."/".$file);
+            if ($file != '.' && $file != '..') {
+                require_once($dir . '/' . $file);
                 $classes[] = $this->buildClass($file);;
             }
         }
         closedir($dirHandler);
 
         if (count($classes) == 0) {
-            throw new \Exception("There are no {$dir} files run.");
+            throw new \Exception("There are no files in {$dir} to run.");
         }
 
         return $classes;
@@ -59,29 +97,5 @@ trait Resolver
         }
 
         return implode('', $fileNameParts);
-    }
-
-    /**
-     * @return mixed
-     *
-     * @throws \Exception
-     */
-    protected function getConfig()
-    {
-        $configFile = 'rumble.php';
-
-        if (!file_exists($configFile)) {
-            throw new \Exception("The rumble.php configuration file is not found.");
-        }
-
-        ob_start();
-        $configArray = include($configFile);
-        ob_end_clean();
-
-        if (!is_array($configArray)) {
-            throw new \Exception("rumble PHP file must return an array.");
-        }
-
-        return $configArray;
     }
 }
