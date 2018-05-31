@@ -29,7 +29,7 @@ class MigrateCommand extends Command
     protected function configure()
     {
         $this->setName('rumble:migrate')
-            ->setDescription('Creates and versions dynamoDB tables.')
+            ->setDescription('Creates and updates DynamoDB tables.')
         ;
     }
 

@@ -1,0 +1,10 @@
+services:
+    Matasar\Bundle\Rumble\Command\MigrateCommand:
+        class: Matasar\Bundle\Rumble\Command\MigrateCommand
+        tags:
+          - { name: 'console.command', command: 'rumble:migrate' }
+
+    Matasar\Bundle\Rumble\Command\SeedCommand:
+        class: Matasar\Bundle\Rumble\Command\SeedCommand
+        tags:
+          - { name: 'console.command', command: 'rumble:seed' }
