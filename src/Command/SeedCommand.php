@@ -17,16 +17,13 @@ class SeedCommand extends Command
     use Resolver;
 
     /**
-     * @var string
+     * {@inheritdoc}
      */
-    private $directory = 'seeds';
+    protected static $defaultName = 'rumble:seed';
 
     protected function configure()
     {
-        $this
-            ->setName('rumble:seed')
-            ->setDescription('Seeds DynamoDB tables with sample data.')
-        ;
+        $this->setDescription('Seeds DynamoDB tables with sample data.');
     }
 
     /**
@@ -39,8 +36,8 @@ class SeedCommand extends Command
             $classes = $this->getClasses($this->directory);
             $this->runSeeder($classes);
 
-        } catch(\Exception $e) {
-            echo "Seed Error: {$e->getMessage()}".PHP_EOL;
+        } catch (\Exception $e) {
+            $output->writeln("Seed Error: {$e->getMessage()}");
             exit();
         }
     }
@@ -54,11 +51,10 @@ class SeedCommand extends Command
      */
     private function runSeeder($classes)
     {
-        $dynamoDbClient =  DynamoDbClient::factory($this->getConfig());
         $transformer = new Marshaler();
 
         foreach($classes as $class) {
-            $migration = new $class($dynamoDbClient, $transformer);
+            $migration = new $class($this->dynamoDBClient, $transformer);
             $migration->seed();
         }
     }

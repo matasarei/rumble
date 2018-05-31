@@ -17,20 +17,13 @@ class MigrateCommand extends Command
     use Resolver;
 
     /**
-     * @var DynamoDbClient
+     * {@inheritdoc}
      */
-    protected $dynamoDBClient;
-
-    /**
-     * @var string
-     */
-    private $directory = 'migrations';
+    protected static $defaultName = 'rumble:migrate';
 
     protected function configure()
     {
-        $this->setName('rumble:migrate')
-            ->setDescription('Creates and updates DynamoDB tables.')
-        ;
+        $this->setDescription('Creates and updates DynamoDB tables.');
     }
 
     /**
@@ -44,7 +37,7 @@ class MigrateCommand extends Command
             $this->runMigration($classes);
 
         } catch(\Exception $e) {
-            echo "Migration Error: {$e->getMessage()}".PHP_EOL;
+            $output->writeln("Migration Error: {$e->getMessage()}");
             exit();
         }
     }
@@ -58,10 +51,9 @@ class MigrateCommand extends Command
      */
     private function runMigration(array $classes)
     {
-        $this->dynamoDBClient = DynamoDbClient::factory($this->getConfig());
-
-        if (!$this->isMigrationsTableExist())
+        if (!$this->isMigrationsTableExist()) {
             $this->createMigrationTable();
+        }
 
         $ranMigrations = $this->getRanMigrations();
         $pendingMigrations = $this->getPendingMigrations($classes, $ranMigrations);
@@ -88,9 +80,12 @@ class MigrateCommand extends Command
     {
         foreach ($ranMigrations as $ranMigration) {
             $key = array_search($ranMigration, $classes);
-            if ($key !== FALSE)
+
+            if ($key !== FALSE) {
                 unset($classes[$key]);
+            }
         }
+
         return $classes;
     }
 
@@ -118,6 +113,7 @@ class MigrateCommand extends Command
     private function isMigrationsTableExist()
     {
         $tables = $this->dynamoDBClient->listTables();
+
         return in_array('migrations', $tables['TableNames']);
     }
 
@@ -138,8 +134,8 @@ class MigrateCommand extends Command
                 ]
             ],
             'ProvisionedThroughput' => [
-                'ReadCapacityUnits'  => 1,
-                'WriteCapacityUnits' => 1
+                'ReadCapacityUnits'  => 5,
+                'WriteCapacityUnits' => 5
             ]
         ]);
     }

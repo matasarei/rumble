@@ -1,10 +1,24 @@
 services:
     Matasar\Bundle\Rumble\Command\MigrateCommand:
         class: Matasar\Bundle\Rumble\Command\MigrateCommand
+        arguments:
+            - '%rumble.migrations_dir%'
+            - '%rumble.endpoint%'
+            - '%rumble.region%'
+            - '%rumble.version%'
+            - '%rumble.key%'
+            - '%rumble.secret%'
         tags:
-          - { name: 'console.command', command: 'rumble:migrate' }
+            - { name: 'console.command', command: 'rumble:migrate' }
 
     Matasar\Bundle\Rumble\Command\SeedCommand:
         class: Matasar\Bundle\Rumble\Command\SeedCommand
+        arguments:
+            - '%rumble.seeds_dir%'
+            - '%rumble.endpoint%'
+            - '%rumble.region%'
+            - '%rumble.version%'
+            - '%rumble.key%'
+            - '%rumble.secret%'
         tags:
-          - { name: 'console.command', command: 'rumble:seed' }
+            - { name: 'console.command', command: 'rumble:seed' }
