@@ -2,9 +2,8 @@
 
 namespace Matasar\Bundle\Rumble\Command;
 
-use Matasar\Bundle\Rumble\Resolver;
-use Aws\DynamoDb\DynamoDbClient;
 use Aws\DynamoDb\Marshaler;
+use Matasar\Bundle\Rumble\Resolver;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -34,10 +33,11 @@ class MigrateCommand extends Command
     {
         try {
             $classes = $this->getClasses($this->directory);
-            $this->runMigration($classes);
+            $this->runMigration($classes, $output);
 
         } catch(\Exception $e) {
             $output->writeln("Migration Error: {$e->getMessage()}");
+
             exit();
         }
     }
@@ -46,10 +46,11 @@ class MigrateCommand extends Command
      * Handle the "migrate" command.
      *
      * @param array $classes
+     * @param OutputInterface $output
      *
      * @throws \Exception
      */
-    private function runMigration(array $classes)
+    private function runMigration(array $classes, OutputInterface $output)
     {
         if (!$this->isMigrationsTableExist()) {
             $this->createMigrationTable();
@@ -59,7 +60,8 @@ class MigrateCommand extends Command
         $pendingMigrations = $this->getPendingMigrations($classes, $ranMigrations);
 
         if (count($pendingMigrations) == 0) {
-            echo "Nothing new to migrate";
+            $output->writeln("Nothing new to migrate");
+
             return;
         }
 
@@ -101,9 +103,10 @@ class MigrateCommand extends Command
         $marsh = new Marshaler();
         $ranMigrations = [];
 
-        foreach ($result->getAll()['Items'] as $item) {
+        foreach ($result['Items'] as $item) {
             $ranMigrations[] = $marsh->unmarshalItem($item)['migration'];
         }
+
         return $ranMigrations;
     }
 
