@@ -22,10 +22,13 @@ class Configuration implements ConfigurationInterface
 
         $rootNode
             ->children()
+                ->scalarNode('table_name')->defaultValue('migrations')->end()
+                ->scalarNode('multi_app_mode')->defaultValue(false)->end()
+                ->scalarNode('app_name')->defaultValue('')->end()
                 ->scalarNode('migrations_dir')->defaultValue('migrations')->end()
                 ->scalarNode('seeds_dir')->defaultValue('seeds')->end()
                 ->scalarNode('region')->defaultValue('dev')->end()
-                ->scalarNode('version')->defaultValue('2012-08-10')->end()
+                ->scalarNode('version')->defaultValue('latest')->end()
                 ->scalarNode('key')->defaultValue('dev')->end()
                 ->scalarNode('secret')->defaultValue('dev')->end()
                 ->scalarNode('endpoint')

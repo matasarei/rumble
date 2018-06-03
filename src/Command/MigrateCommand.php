@@ -16,9 +16,66 @@ class MigrateCommand extends Command
     use Resolver;
 
     /**
+     * @var string
+     */
+    const TABLE_DEFAULT = 'migrations';
+
+    /**
      * {@inheritdoc}
      */
     protected static $defaultName = 'rumble:migrate';
+
+    /**
+     * Migrations table.
+     *
+     * @var string
+     */
+    private $tableName;
+
+    /**
+     * Use one migrations table for sevaral apps.
+     *
+     * @var bool
+     */
+    private $multiAppMode;
+
+    /**
+     * Current App uniq name.
+     *
+     * @var string
+     */
+    private $appName;
+
+    /**
+     * MigrateCommand constructor.
+     *
+     * @param $directory
+     * @param $endpoint
+     * @param $region
+     * @param $version
+     * @param null $key
+     * @param null $secret
+     * @param string $tableName
+     * @param bool $multiAppMode
+     * @param string $appName
+     */
+    public function __construct(
+        $directory,
+        $endpoint,
+        $region,
+        $version,
+        $key = null,
+        $secret = null,
+        $tableName = self::TABLE_DEFAULT,
+        $multiAppMode = false,
+        $appName = ''
+    )
+    {
+        parent::__construct($directory, $endpoint, $region, $version, $key, $secret);
+
+        $this->tableName = $tableName;
+        $this->multiAppMode = $multiAppMode;
+    }
 
     protected function configure()
     {
@@ -96,9 +153,15 @@ class MigrateCommand extends Command
      */
     private function getRanMigrations()
     {
-        $result =  $this->dynamoDBClient->scan([
-            'TableName' => 'migrations'
-        ]);
+        $params = ['TableName' => 'migrations'];
+
+        if ($this->multiAppMode) {
+            $params['FilterExpression'] = '#app_name = :app_name';
+            $params['ExpressionAttributeNames'] = ['#app_name' => 'app_name'];
+            $params['ExpressionAttributeValues'] = (new Marshaler())->marshalItem([':app_name' => $this->appName]);
+        }
+
+        $result =  $this->dynamoDBClient->scan($params);
 
         $marsh = new Marshaler();
         $ranMigrations = [];
@@ -122,20 +185,34 @@ class MigrateCommand extends Command
 
     private function createMigrationTable()
     {
+        $attributes = [
+            [
+                'AttributeName' => 'migration',
+                'AttributeType' => 'S'
+            ]
+        ];
+        $keys = [
+            [
+                'AttributeName' => 'migration',
+                'KeyType'       => 'HASH'
+            ]
+        ];
+
+        if ($this->multiAppMode) {
+            $attributes[] = [
+                'AttributeName' => 'app_id',
+                'AttributeType' => 'S'
+            ];
+            $keys[] = [
+                'AttributeName' => 'app_id',
+                'KeyType' => 'RANGE'
+            ];
+        }
+
         $this->dynamoDBClient->createTable([
-            'TableName' => 'migrations',
-            'AttributeDefinitions' => [
-                [
-                    'AttributeName' => 'migration',
-                    'AttributeType' => 'S'
-                ]
-            ],
-            'KeySchema' => [
-                [
-                    'AttributeName' => 'migration',
-                    'KeyType'       => 'HASH'
-                ]
-            ],
+            'TableName' => $this->tableName,
+            'AttributeDefinitions' => $attributes,
+            'KeySchema' => $keys,
             'ProvisionedThroughput' => [
                 'ReadCapacityUnits'  => 5,
                 'WriteCapacityUnits' => 5
@@ -148,11 +225,17 @@ class MigrateCommand extends Command
      */
     private function addToRanMigrations($migration)
     {
+        $item = [
+            'migration' => ['S' => $migration]
+        ];
+
+        if ($this->multiAppMode) {
+            $item['app_name'] = $this->appName;
+        }
+
         $this->dynamoDBClient->putItem([
             'TableName' => 'migrations',
-            'Item' => [
-                'migration' => ['S' => $migration]
-            ]
+            'Item' => $item
         ]);
     }
 }
