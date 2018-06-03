@@ -41,7 +41,7 @@ trait Resolver
 
         $this->directory = $directory;
         $this->dynamoDBClient = new DynamoDbClient($dbClientParams);
-        
+
         parent::__construct();
     }
 

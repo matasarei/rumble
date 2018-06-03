@@ -28,9 +28,12 @@ Currently, ```rumble``` supports only the below dynamodb features:
     With default content:
     ```yaml
      rumble:
+         table_name: 'migrations' #(optional)
+         multi_app_mode: false # use same migration table for several apps (optional)
+         app_name: '' # app uniq name for multi-app mode (optional)
          migrations_dir: 'migrations' # <project_root>/migrations/... (optional)
          seeds_dir: 'seeds' # <project_root>/seeds/... (optional)
-         version: '2012-08-10' # (default, optional)
+         version: 'latest' # (default, optional)
          region: 'dev'
          key: 'dev'
          secret: 'dev'

@@ -8,6 +8,9 @@ services:
             - '%rumble.version%'
             - '%rumble.key%'
             - '%rumble.secret%'
+            - '%rumble.table_name%'
+            - '%rumble.multi_app_mode%'
+            - '%rumble.app_name%'
         tags:
             - { name: 'console.command', command: 'rumble:migrate' }
 
