@@ -3,7 +3,7 @@
 namespace Matasar\Bundle\Rumble\Command;
 
 use Matasar\Bundle\Rumble\Resolver;
-use Aws\DynamoDB\Marshaler;
+use Aws\DynamoDb\Marshaler;
 use Aws\DynamoDb\DynamoDbClient;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
